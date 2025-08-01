@@ -7,5 +7,5 @@ signal = {
     "strategy": "EMA"
 }
 
-res = requests.post("http://localhost:5000/signal", json=signal)
+res = requests.post("https://forid0k.github.io/quotex-bot/", json=signal)
 print(res.json())
