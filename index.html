@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>📡 Future Signal Board</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      background-color: #111;
+      color: #0f0;
+      font-family: monospace;
+      padding: 20px;
+    }
+    h1 {
+      color: #00ff99;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #0f0;
+      text-align: center;
+    }
+    th {
+      background-color: #222;
+    }
+    .buy { color: #00ff00; }
+    .sell { color: #ff4444; }
+  </style>
+</head>
+<body>
+  <h1>📈 Live Future Signal Board</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Asset</th>
+        <th>Signal</th>
+        <th>Timeframe</th>
+        <th>Strategy</th>
+        <th>Time</th>
+      </tr>
+    </thead>
+    <tbody id="signal-table">
+      <tr><td colspan="5">⌛ Loading signals...</td></tr>
+    </tbody>
+  </table>
+
+  <script>
+    async function fetchSignals() {
+      try {
+        const res = await fetch('https://your-flask-api-url.com/get-signals');
+        const data = await res.json();
+
+        const table = document.getElementById("signal-table");
+        table.innerHTML = '';
+
+        data.reverse().forEach(signal => {
+          const row = `
+            <tr>
+              <td>${signal.asset}</td>
+              <td class="${signal.signal.toLowerCase()}">${signal.signal}</td>
+              <td>${signal.time}</td>
+              <td>${signal.strategy}</td>
+              <td>${signal.timestamp || 'Now'}</td>
+            </tr>
+          `;
+          table.innerHTML += row;
+        });
+      } catch (err) {
+        console.error("Error fetching signals:", err);
+      }
+    }
+
+    setInterval(fetchSignals, 2000);
+    fetchSignals();
+  </script>
+</body>
+</html>
