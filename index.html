@@ -131,50 +131,7 @@ h1 { text-align:center; margin-bottom:2rem; font-size:2.5rem; color:#0ff; text-s
 </tbody>
 </table>
 
-<script>
-// Example JS to dynamically update table with selected strategies
-const marketSelect = document.getElementById('marketSelect');
-const strategyCheckboxes = document.querySelectorAll('.strategy-options input[type="checkbox"]');
-const tableBody = document.querySelector('#signalTable tbody');
-
-function getRandomSignal() {
-  const signals = ['Buy','Sell','Hold'];
-  const randomIndex = Math.floor(Math.random()*signals.length);
-  return signals[randomIndex];
-}
-
-function updateTable() {
-  const selectedStrategies = Array.from(strategyCheckboxes)
-                                .filter(cb=>cb.checked)
-                                .map(cb=>cb.value);
-  const market = marketSelect.value;
-  tableBody.innerHTML = '';
-  const now = new Date().toLocaleTimeString();
-  selectedStrategies.forEach(strategy => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${now}</td>
-      <td>${market}</td>
-      <td>${market}</td>
-      <td>1M</td>
-      <td class="signal-${getRandomSignal().toLowerCase()}">${getRandomSignal()}</td>
-      <td>${strategy}</td>
-    `;
-    tableBody.appendChild(tr);
-  });
-}
-
-// Initial table update
-updateTable();
-
-// Update every 5 seconds
-setInterval(updateTable, 5000);
-
-// Update immediately on user change
-marketSelect.addEventListener('change', updateTable);
-strategyCheckboxes.forEach(cb=>cb.addEventListener('change', updateTable));
-</script>
-
-</div>
+ <script src="strategy.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
