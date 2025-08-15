@@ -1,82 +1,180 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>📡 Future Signal Board</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body {
-      background-color: #111;
-      color: #0f0;
-      font-family: monospace;
-      padding: 20px;
-    }
-    h1 {
-      color: #00ff99;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    th, td {
-      padding: 10px;
-      border: 1px solid #0f0;
-      text-align: center;
-    }
-    th {
-      background-color: #222;
-    }
-    .buy { color: #00ff00; }
-    .sell { color: #ff4444; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Future Signal Board</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow-x: hidden;
+    color: #fff;
+}
+.container {
+    width: 95%;
+    max-width: 1200px;
+    padding: 2rem;
+    backdrop-filter: blur(10px);
+    background: rgba(255,255,255,0.05);
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.2);
+    position: relative;
+}
+.animated-bg { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:-1; }
+.floating-shape { position:absolute; border-radius:50%; background: rgba(255,255,255,0.1); animation: float 6s ease-in-out infinite; }
+.shape1 { width:80px; height:80px; top:20%; left:10%; animation-delay:0s; }
+.shape2 { width:60px; height:60px; top:70%; right:10%; animation-delay:2s; }
+.shape3 { width:100px; height:100px; top:40%; right:20%; animation-delay:4s; }
+@keyframes float { 0%,100%{transform:translateY(0px) rotate(0deg);} 50%{transform:translateY(-20px) rotate(180deg);} }
+
+h1 { text-align:center; margin-bottom:2rem; font-size:2.5rem; color:#0ff; text-shadow:0 0 10px #0ff; }
+
+.controls { display:flex; justify-content:center; flex-wrap:wrap; gap:15px; margin-bottom:2rem; }
+
+.controls select, .strategy-selector {
+    padding:8px 12px;
+    border-radius:8px;
+    border:1px solid #0ff;
+    background:#222;
+    color:#0ff;
+    font-size:16px;
+}
+
+.strategy-selector {
+  display: flex;
+  flex-direction: column;
+  gap:6px;
+}
+
+.strategy-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap:12px;
+}
+
+.strategy-options label {
+  cursor: pointer;
+}
+
+.strategy-options input[type="checkbox"] {
+  margin-right: 6px;
+  accent-color: #0ff;
+}
+
+#signalTable { width:100%; border-collapse:collapse; text-align:center; backdrop-filter: blur(5px); background: rgba(0,0,0,0.2); border-radius:10px; overflow:hidden; }
+#signalTable th, #signalTable td { padding:12px; border-bottom:1px solid rgba(255,255,255,0.2); }
+#signalTable th { background-color: rgba(0,0,0,0.4); }
+#signalTable tr:nth-child(even){ background: rgba(255,255,255,0.05); }
+
+.signal-buy { color: #00ff88; font-weight:bold; text-shadow:0 0 10px #00ff88; animation: pulse 1.5s infinite; }
+.signal-sell { color: #ff4444; font-weight:bold; text-shadow:0 0 10px #ff4444; animation: pulse 1.5s infinite; }
+.signal-hold { color: #ffd700; font-weight:bold; text-shadow:0 0 10px #ffd700; animation: pulse 1.5s infinite; }
+
+@keyframes pulse {
+  0%,100%{ text-shadow:0 0 10px; }
+  50%{ text-shadow:0 0 20px; }
+}
+
+@keyframes fadeIn { 0%{opacity:0;} 100%{opacity:1;} }
+#signalTable tr { animation: fadeIn 0.8s ease-in; }
+
+</style>
 </head>
 <body>
-  <h1>📈 Live Future Signal Board</h1>
-  <table>
-    <thead>
-      <tr>
-        <th>Asset</th>
-        <th>Signal</th>
-        <th>Timeframe</th>
-        <th>Strategy</th>
-        <th>Time</th>
-      </tr>
-    </thead>
-    <tbody id="signal-table">
-      <tr><td colspan="5">⌛ Loading signals...</td></tr>
-    </tbody>
-  </table>
+<div class="animated-bg">
+    <div class="floating-shape shape1"></div>
+    <div class="floating-shape shape2"></div>
+    <div class="floating-shape shape3"></div>
+</div>
 
-  <script>
-    async function fetchSignals() {
-      try {
-        const res = await fetch('wss://ws2.market-qx.trade/socket.io/?EIO=3&transport=websocket
-');
-        const data = await res.json();
+<div class="container">
+<h1>📈 Future Signal Generator Board</h1>
 
-        const table = document.getElementById("signal-table");
-        table.innerHTML = '';
+<div class="controls">
+    <select id="marketSelect">
+      <option value="EURUSD">EURUSD</option>
+      <option value="USDJPY">USDJPY</option>
+      <option value="AUDUSD">AUDUSD</option>
+    </select>
 
-        data.reverse().forEach(signal => {
-          const row = `
-            <tr>
-              <td>${signal.asset}</td>
-              <td class="${signal.signal.toLowerCase()}">${signal.signal}</td>
-              <td>${signal.time}</td>
-              <td>${signal.strategy}</td>
-              <td>${signal.timestamp || 'Now'}</td>
-            </tr>
-          `;
-          table.innerHTML += row;
-        });
-      } catch (err) {
-        console.error("Error fetching signals:", err);
-      }
-    }
+    <div class="strategy-selector">
+      <label>Choose Strategies:</label>
+      <div class="strategy-options">
+        <label><input type="checkbox" value="EMA" checked> EMA</label>
+        <label><input type="checkbox" value="RSI" checked> RSI</label>
+        <label><input type="checkbox" value="Volume" checked> Volume</label>
+        <label><input type="checkbox" value="PriceAction" checked> Price Action</label>
+      </div>
+    </div>
+</div>
 
-    setInterval(fetchSignals, 2000);
-    fetchSignals();
-  </script>
+<table id="signalTable">
+<thead>
+<tr>
+<th>Time</th>
+<th>Market</th>
+<th>Asset</th>
+<th>Timeframe</th>
+<th>Signal</th>
+<th>Strategy</th>
+</tr>
+</thead>
+<tbody>
+<tr><td colspan="6">Waiting for signal...</td></tr>
+</tbody>
+</table>
+
+<script>
+// Example JS to dynamically update table with selected strategies
+const marketSelect = document.getElementById('marketSelect');
+const strategyCheckboxes = document.querySelectorAll('.strategy-options input[type="checkbox"]');
+const tableBody = document.querySelector('#signalTable tbody');
+
+function getRandomSignal() {
+  const signals = ['Buy','Sell','Hold'];
+  const randomIndex = Math.floor(Math.random()*signals.length);
+  return signals[randomIndex];
+}
+
+function updateTable() {
+  const selectedStrategies = Array.from(strategyCheckboxes)
+                                .filter(cb=>cb.checked)
+                                .map(cb=>cb.value);
+  const market = marketSelect.value;
+  tableBody.innerHTML = '';
+  const now = new Date().toLocaleTimeString();
+  selectedStrategies.forEach(strategy => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${now}</td>
+      <td>${market}</td>
+      <td>${market}</td>
+      <td>1M</td>
+      <td class="signal-${getRandomSignal().toLowerCase()}">${getRandomSignal()}</td>
+      <td>${strategy}</td>
+    `;
+    tableBody.appendChild(tr);
+  });
+}
+
+// Initial table update
+updateTable();
+
+// Update every 5 seconds
+setInterval(updateTable, 5000);
+
+// Update immediately on user change
+marketSelect.addEventListener('change', updateTable);
+strategyCheckboxes.forEach(cb=>cb.addEventListener('change', updateTable));
+</script>
+
+</div>
 </body>
 </html>
